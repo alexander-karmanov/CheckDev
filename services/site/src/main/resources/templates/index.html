@@ -187,6 +187,9 @@
                                         <i class="fa fa-comments pl-3" aria-hidden="true"></i>
                                         <span>Откликов:</span>
                                         <span th:text="${interview.countWishers}"></span>
+                                        <span>Опыт:</span>
+                                        <span th:text="${authService.findById(interview.submitterId).experience}"></span>
+
                                         <i class="fa fa-calendar-check pl-3"></i>
                                         <span>Удобное время:</span>
                                         <span th:text="${interview.approximateDate}"></span>
