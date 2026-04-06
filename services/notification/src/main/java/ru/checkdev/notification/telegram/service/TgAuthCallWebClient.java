@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
+import reactor.util.retry.Retry;
 import ru.checkdev.notification.domain.Profile;
+
+import java.time.Duration;
 
 /**
  * Класс реализует методы get и post для отправки сообщений через WebClient
@@ -37,6 +40,7 @@ public class TgAuthCallWebClient implements TgCall {
                 .uri(url)
                 .retrieve()
                 .bodyToMono(Profile.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
                 .doOnError(err -> log.error("API not found: {}", err.getMessage()));
     }
 
@@ -55,6 +59,7 @@ public class TgAuthCallWebClient implements TgCall {
                 .bodyValue(profile)
                 .retrieve()
                 .bodyToMono(Object.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
                 .doOnError(err -> log.error("API not found: {}", err.getMessage()));
     }
 
@@ -65,6 +70,7 @@ public class TgAuthCallWebClient implements TgCall {
                 .uri(url)
                 .retrieve()
                 .bodyToMono(Object.class)
+                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
                 .doOnError(err -> log.error("API not found: {}", err.getMessage()));
     }
 }

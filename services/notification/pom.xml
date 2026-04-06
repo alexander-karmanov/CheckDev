@@ -119,6 +119,10 @@
             <artifactId>SpringFakeTest</artifactId>
             <version>v.1.0.3</version>
         </dependency>
+        <dependency>
+            <groupId>io.projectreactor</groupId>
+            <artifactId>reactor-core</artifactId>
+        </dependency>
 
     </dependencies>
 
