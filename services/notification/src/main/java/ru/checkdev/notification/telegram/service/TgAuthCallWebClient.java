@@ -3,12 +3,14 @@ package ru.checkdev.notification.telegram.service;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 import reactor.util.retry.Retry;
 import ru.checkdev.notification.domain.Profile;
+import ru.checkdev.notification.telegram.utils.SimpleCircuitBreaker;
 
 import java.time.Duration;
 
@@ -27,6 +29,9 @@ public class TgAuthCallWebClient implements TgCall {
     @Value("${server.auth}")
     private String urlServiceAuth;
 
+    @Autowired
+    private SimpleCircuitBreaker circuitBreaker;
+
     /**
      * Метод get
      *
@@ -35,13 +40,15 @@ public class TgAuthCallWebClient implements TgCall {
      */
     @Override
     public Mono<Profile> doGet(String url) {
-        return WebClient.create(urlServiceAuth)
-                .get()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(Profile.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-                .doOnError(err -> log.error("API not found: {}", err.getMessage()));
+        return circuitBreaker.execute(() ->
+                WebClient.create(urlServiceAuth)
+                        .get()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToMono(Profile.class)
+                        .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+                        .doOnError(err -> log.error("API not found: {}", err.getMessage()))
+        );
     }
 
     /**
@@ -53,24 +60,28 @@ public class TgAuthCallWebClient implements TgCall {
      */
     @Override
     public Mono<Object> doPost(String url, Profile profile) {
-        return WebClient.create(urlServiceAuth)
-                .post()
-                .uri(url)
-                .bodyValue(profile)
-                .retrieve()
-                .bodyToMono(Object.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-                .doOnError(err -> log.error("API not found: {}", err.getMessage()));
+        return circuitBreaker.execute(() ->
+                WebClient.create(urlServiceAuth)
+                        .post()
+                        .uri(url)
+                        .bodyValue(profile)
+                        .retrieve()
+                        .bodyToMono(Object.class)
+                        .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+                        .doOnError(err -> log.error("API not found: {}", err.getMessage()))
+        );
     }
 
     @Override
     public Mono<Object> doPost(String url) {
-        return WebClient.create(urlServiceAuth)
-                .post()
-                .uri(url)
-                .retrieve()
-                .bodyToMono(Object.class)
-                .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
-                .doOnError(err -> log.error("API not found: {}", err.getMessage()));
+        return circuitBreaker.execute(() ->
+                WebClient.create(urlServiceAuth)
+                        .post()
+                        .uri(url)
+                        .retrieve()
+                        .bodyToMono(Object.class)
+                        .retryWhen(Retry.fixedDelay(3, Duration.ofSeconds(1)))
+                        .doOnError(err -> log.error("API not found: {}", err.getMessage()))
+        );
     }
 }
