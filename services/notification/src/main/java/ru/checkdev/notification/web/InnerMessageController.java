@@ -8,8 +8,8 @@ import org.springframework.web.bind.annotation.*;
 import ru.checkdev.notification.domain.InnerMessage;
 import ru.checkdev.notification.dto.CategoryWithTopicDTO;
 import ru.checkdev.notification.dto.InnerMessageDTO;
+import ru.checkdev.notification.kafka.CategoryNotificationProducer;
 import ru.checkdev.notification.service.InnerMessageService;
-import ru.checkdev.notification.service.NotificationMessagesService;
 import ru.checkdev.notification.service.SubscribeCategoryService;
 import ru.checkdev.notification.service.SubscribeTopicService;
 
@@ -23,7 +23,7 @@ public class InnerMessageController {
     private final InnerMessageService messageService;
     private final SubscribeCategoryService categoryService;
     private final SubscribeTopicService topicService;
-    private final NotificationMessagesService notificationMessagesService;
+    private final CategoryNotificationProducer categoryNotificationProducer;
 
     @GetMapping("/{id}")
     public ResponseEntity<List<InnerMessage>> findMessage(@PathVariable int id) {
@@ -56,7 +56,7 @@ public class InnerMessageController {
                 categoryWithTopicDTO,
                 categorySubscribersIds, topicSubscribersIds);
 
-        notificationMessagesService.sendMessagesToCategorySubscribers(
+        categoryNotificationProducer.sendCategoryNotificationEvent(
                 categorySubscribersIds,
                 categoryWithTopicDTO);
 
