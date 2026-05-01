@@ -1,0 +1,10 @@
+version: "3.9"
+services:
+  eureka:
+    build:
+      context: ./services/eureka
+      dockerfile: Dockerfile
+    container_name: eureka
+    ports:
+      - "9009:9009"
+    restart: always
