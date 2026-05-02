@@ -1,3 +1,4 @@
+
 version: "3.9"
 services:
   eureka:
@@ -7,4 +8,33 @@ services:
     container_name: eureka
     ports:
       - "9009:9009"
+
+  db_auth:
+    image: postgres
+    container_name: cd_auth
+    environment:
+      - POSTGRES_DB=cd_auth
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/pgData
+    volumes:
+      - pgdata_auth:/pgData
     restart: always
+
+  auth:
+    build:
+      context: ./services/auth
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:9009/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_auth:5432/cd_auth
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    container_name: auth
+    depends_on:
+      - db_auth
+      - eureka
+    restart: always
+
+volumes:
+  pgdata_auth:

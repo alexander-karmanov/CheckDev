@@ -1,15 +1,13 @@
-# Temporary file, which will be deleted later
+FROM maven:3.9-eclipse-temurin-17 AS maven
+WORKDIR /app
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+COPY src/ ./src/
+RUN mvn package -DskipTests
 
 FROM eclipse-temurin:17-jre-jammy
-
-# Создаём директорию для приложения
 WORKDIR /eureka
+COPY --from=maven /eureka/target/eureka.jar eureka.jar
+EXPOSE 8080
+CMD ["java", "-jar", "eureka.jar"]
 
-# Копируем JAR‑файл
-COPY target/eureka-0.0.1-SNAPSHOT.jar eureka.jar
-
-# Открываем порт
-EXPOSE 9009
-
-# Запускаем приложение
-ENTRYPOINT ["java", "-jar", "eureka.jar"]
