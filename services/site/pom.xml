@@ -233,7 +233,7 @@
                     <finalName>site</finalName>
                     <archive>
                         <manifest>
-                            <mainClass>ru.checkdev.site.SiteSrv</mainClass>
+                            <mainClass>ru.job4j.site.SiteSrv</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

@@ -1,13 +1,9 @@
-
-version: "3.9"
 services:
   eureka:
     build:
       context: ./services/eureka
       dockerfile: Dockerfile
     container_name: eureka
-    ports:
-      - "9009:9009"
 
   db_auth:
     image: postgres
@@ -36,5 +32,135 @@ services:
       - eureka
     restart: always
 
+
+  db_desc:
+    image: postgres
+    container_name: cd_desc
+    environment:
+      - POSTGRES_DB=cd_desc
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/pgData
+    volumes:
+      - pgdata_desc:/pgData
+    restart: always
+
+  desc:
+    build:
+      context: ./services/desc
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:9009/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_desc:5432/cd_desc
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    container_name: desc
+    depends_on:
+      - db_desc
+      - eureka
+    restart: always
+
+  db_generator:
+    image: postgres
+    container_name: cd_generator
+    environment:
+      - POSTGRES_DB=cd_generator
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/pgData
+    volumes:
+      - pgdata_generator:/pgData
+    restart: always
+
+  generator:
+    build:
+      context: ./services/generator
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:9009/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_generator:5432/cd_generator
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    container_name: generator
+    depends_on:
+      - db_generator
+      - eureka
+    restart: always
+
+  db_mock:
+    image: postgres
+    container_name: cd_mock
+    environment:
+      - POSTGRES_DB=cd_mock
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/pgData
+    volumes:
+      - pgdata_mock:/pgData
+    restart: always
+
+  mock:
+    build:
+      context: ./services/mock
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:9009/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_mock:5432/cd_mock
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    container_name: mock
+    depends_on:
+      - db_mock
+      - eureka
+    restart: always
+
+  db_notification:
+    image: postgres
+    container_name: cd_notification
+    environment:
+      - POSTGRES_DB=cd_notification
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=password
+      - PGDATA=/pgData
+    volumes:
+      - pgdata_notification:/pgData
+    restart: always
+
+  notification:
+    build:
+      context: ./services/notification
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:9009/eureka/
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db_notification:5432/cd_notification
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=password
+    container_name: notification
+    depends_on:
+      - db_notification
+      - eureka
+    restart: always
+
+  site:
+    build:
+      context: ./services/site
+      dockerfile: Dockerfile
+    environment:
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://eureka:9009/eureka/
+    container_name: site
+    ports:
+      - "8080:8080"
+    depends_on:
+      - auth
+      - desc
+      - generator
+      - mock
+      - notification
+    restart: always
+
 volumes:
   pgdata_auth:
+  pgdata_desc:
+  pgdata_generator:
+  pgdata_mock:
+  pgdata_notification:

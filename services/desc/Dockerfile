@@ -1,14 +1,14 @@
 # Этап 1 - сборка проекта в jar
 FROM maven:3.9-eclipse-temurin-21 AS maven
-WORKDIR /auth
+WORKDIR /desc
 COPY pom.xml checkstyle.xml ./
 RUN mvn dependency:go-offline -B
 COPY src/ ./src/
 RUN mvn package -DskipTests
 
-# Этап 2 - запуск приложения в Docker-контейнере
+# Этап 2 - указание как запустить проект
 FROM eclipse-temurin:21-jre-jammy
-WORKDIR /auth
-COPY --from=maven /auth/target/*.jar auth.jar
+WORKDIR /desc
+COPY --from=maven /desc/target/*.jar desc.jar
 EXPOSE 8080
-CMD ["java", "-jar", "auth.jar"]
+CMD ["java", "-jar", "desc.jar"]
